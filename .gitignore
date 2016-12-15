@@ -1,0 +1,10 @@
+# Ignore swap files
+*.swp
+
+# Ignore backup tilde files
+*.~
+
+# Ignore compiled objects
+*.o
+*.a
+*.so
