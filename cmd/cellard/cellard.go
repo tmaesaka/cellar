@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/tmaesaka/cellar/api"
 )
 
 func usage() {
@@ -19,8 +21,10 @@ func init() {
 }
 
 func main() {
-	port := flag.Int("port", 8084, "TCP port number to listen on (default: 8084)")
+	config := api.NewConfig()
+
+	flag.IntVar(&config.Port, "port", 8084, "TCP port number to listen on (default: 8084)")
 	flag.Parse()
 
-	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", *port)
+	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", config.Port)
 }
