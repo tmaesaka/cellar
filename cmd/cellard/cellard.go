@@ -32,5 +32,9 @@ func main() {
 	flag.BoolVar(&config.VeryVerbose, "vv", false, "Set cellard to be very verbose")
 	flag.Parse()
 
-	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", config.Port)
+	if err := api.Run(config); err != nil {
+		// TODO(toru): Use err.Error() once api.Run() starts doing stuff.
+		fmt.Fprintf(os.Stderr, "Failed to start cellard\n")
+		os.Exit(1)
+	}
 }
