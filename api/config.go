@@ -9,6 +9,20 @@ type config struct {
 	VeryVerbose bool   `json:"very_verbose"` // Server is very verbose
 }
 
+// configValidationError is a custom error type for representing
+// validation related errors.
+type configValidationError struct {
+	InvalidFields map[string]string // Maps a field to its descriptive error message
+}
+
+// NewConfig returns a new config for server configuration.
 func NewConfig() *config {
 	return &config{}
+}
+
+// NewConfigValidationError returns a new configValidationError.
+func NewConfigValidationError() *configValidationError {
+	err := configValidationError{}
+	err.InvalidFields = make(map[string]string)
+	return &err
 }
