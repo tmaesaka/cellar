@@ -24,6 +24,24 @@ func NewConfig() *config {
 	return &config{}
 }
 
+// Validate validates a given config.
+func (cfg *config) Validate() error {
+	rv := NewConfigValidationError()
+
+	if cfg.Port == 0 {
+		rv.InvalidFields["port"] = "tcp port number is invalid"
+	}
+	if cfg.DataDir == "" {
+		rv.InvalidFields["datadir"] = "datadir can't be blank"
+	}
+
+	if len(rv.InvalidFields) > 0 {
+		return rv
+	} else {
+		return nil
+	}
+}
+
 // NewConfigValidationError returns a new configValidationError.
 func NewConfigValidationError() *configValidationError {
 	err := configValidationError{}

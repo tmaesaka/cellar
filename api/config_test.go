@@ -32,3 +32,21 @@ func TestNewConfigValidationError(t *testing.T) {
 		t.Errorf("Invalid error string; expected to contain datadir")
 	}
 }
+
+func TestConfigValidate(t *testing.T) {
+	config := NewConfig()
+	err := config.Validate()
+
+	if err == nil {
+		t.Fatal("Expected config validation to fail")
+	}
+
+	if cve, ok := err.(*configValidationError); ok {
+		if _, ok := cve.InvalidFields["port"]; !ok {
+			t.Error("Expected port to fail validation")
+		}
+		if _, ok := cve.InvalidFields["datadir"]; !ok {
+			t.Error("Expected datadir to fail validation")
+		}
+	}
+}
