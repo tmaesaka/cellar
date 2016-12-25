@@ -20,6 +20,10 @@ func ensureDataDirPresence(path string) error {
 // Run checks if the provided configuration is sufficient to run the
 // Cellar daemon. If successful, a Web API server will be started.
 func Run(config *config) error {
+	if err := config.Validate(); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := ensureDataDirPresence(config.DataDir); err != nil {
 		log.Fatalf("Invalid datadir: %v", err)
 	}
