@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-func ensureDataDirPresence(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		if err = os.MkdirAll(path, 0755); err != nil {
+func ensureDataDirPresence(datadir string) error {
+	if _, err := os.Stat(datadir); os.IsNotExist(err) {
+		if err = os.MkdirAll(datadir, 0755); err != nil {
 			return err
 		}
 	}
