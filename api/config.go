@@ -6,7 +6,7 @@ import (
 
 // config holds the server settings. These settings could come from
 // the command-line and/or a configuration file.
-type config struct {
+type Config struct {
 	Port        int    `json:"port"`         // TCP port number that the server listens on
 	DataDir     string `json:"datadir"`      // Path to the Cellar data directory
 	Verbose     bool   `json:"verbose"`      // Server is verbose
@@ -20,12 +20,12 @@ type configValidationError struct {
 }
 
 // NewConfig returns a new config for server configuration.
-func NewConfig() *config {
-	return &config{}
+func NewConfig() *Config {
+	return &Config{}
 }
 
 // Validate validates a given config.
-func (cfg *config) Validate() error {
+func (cfg *Config) Validate() error {
 	rv := NewConfigValidationError()
 
 	if cfg.Port == 0 {
