@@ -1,12 +1,12 @@
-package api
+package config
 
 import (
 	"strings"
 	"testing"
 )
 
-func TestNewConfig(t *testing.T) {
-	if NewConfig() == nil {
+func TestNewApiConfig(t *testing.T) {
+	if NewApiConfig() == nil {
 		t.Error("Failed to create config")
 	}
 }
@@ -34,7 +34,7 @@ func TestNewConfigValidationError(t *testing.T) {
 }
 
 func TestConfigValidate(t *testing.T) {
-	config := NewConfig()
+	config := NewApiConfig()
 	err := config.Validate()
 
 	if err == nil {

@@ -1,12 +1,12 @@
-package api
+package config
 
 import (
 	"strings"
 )
 
-// config holds the server settings. These settings could come from
+// ApiConfig holds the server settings. These settings could come from
 // the command-line and/or a configuration file.
-type Config struct {
+type ApiConfig struct {
 	Port        int    `json:"port"`         // TCP port number that the server listens on
 	DataDir     string `json:"datadir"`      // Path to the Cellar data directory
 	Verbose     bool   `json:"verbose"`      // Server is verbose
@@ -20,12 +20,19 @@ type configValidationError struct {
 }
 
 // NewConfig returns a new config for server configuration.
-func NewConfig() *Config {
-	return &Config{}
+func NewApiConfig() *ApiConfig {
+	return &ApiConfig{}
+}
+
+// NewConfigValidationError returns a new configValidationError.
+func NewConfigValidationError() *configValidationError {
+	err := configValidationError{}
+	err.InvalidFields = make(map[string]string)
+	return &err
 }
 
 // Validate validates a given config.
-func (cfg *Config) Validate() error {
+func (cfg *ApiConfig) Validate() error {
 	rv := NewConfigValidationError()
 
 	if cfg.Port == 0 {
@@ -40,13 +47,6 @@ func (cfg *Config) Validate() error {
 	} else {
 		return nil
 	}
-}
-
-// NewConfigValidationError returns a new configValidationError.
-func NewConfigValidationError() *configValidationError {
-	err := configValidationError{}
-	err.InvalidFields = make(map[string]string)
-	return &err
 }
 
 // Error returns a summarized context of the validation error.
