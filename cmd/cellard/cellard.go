@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/tmaesaka/cellar/api"
+	"github.com/tmaesaka/cellar/config"
 )
 
 func usage() {
@@ -24,7 +25,7 @@ func init() {
 }
 
 func main() {
-	config := api.NewConfig()
+	config := config.NewApiConfig()
 
 	flag.IntVar(&config.Port, "port", 8084, "TCP port number to listen on (default: 8084)")
 	flag.StringVar(&config.DataDir, "datadir", ".", "Path to the Cellar data directory")

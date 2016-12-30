@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/tmaesaka/cellar/config"
 )
 
 func ensureDataDirPresence(datadir string) error {
@@ -19,7 +21,7 @@ func ensureDataDirPresence(datadir string) error {
 
 // Run checks if the provided configuration is sufficient to run the
 // Cellar daemon. If successful, a Web API server will be started.
-func Run(config *Config) error {
+func Run(config *config.ApiConfig) error {
 	if err := config.Validate(); err != nil {
 		log.Fatal(err)
 	}
