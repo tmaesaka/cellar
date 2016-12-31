@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/tmaesaka/cellar/api/handlers"
 	"github.com/tmaesaka/cellar/config"
 )
 
@@ -30,12 +32,15 @@ func Run(config *config.ApiConfig) error {
 		log.Fatalf("Invalid datadir: %v", err)
 	}
 
+	router := httprouter.New()
+	router.HandlerFunc("GET", "/config", handlers.ConfigIndexHandler(config))
+
 	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", config.Port)
 
 	addr := fmt.Sprintf(":%d", config.Port)
 
 	// Start an empty http server until we decide on handler strategy.
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(addr, router))
 
 	return nil
 }
