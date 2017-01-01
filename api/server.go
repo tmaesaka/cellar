@@ -33,7 +33,7 @@ func Run(config *config.ApiConfig) error {
 	}
 
 	router := vestigo.NewRouter()
-	router.Get("/config", handlers.ConfigIndexHandler(config))
+	router.Get("/config", handlers.IndexConfigHandler(config))
 
 	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", config.Port)
 
