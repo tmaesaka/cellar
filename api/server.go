@@ -23,21 +23,21 @@ func ensureDataDirPresence(datadir string) error {
 
 // Run checks if the provided configuration is sufficient to run the
 // Cellar daemon. If successful, a Web API server will be started.
-func Run(config *config.ApiConfig) error {
-	if err := config.Validate(); err != nil {
+func Run(cfg *config.ApiConfig) error {
+	if err := cfg.Validate(); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := ensureDataDirPresence(config.DataDir); err != nil {
+	if err := ensureDataDirPresence(cfg.DataDir); err != nil {
 		log.Fatalf("Invalid datadir: %v", err)
 	}
 
 	router := vestigo.NewRouter()
-	router.Get("/config", handlers.IndexConfigHandler(config))
+	router.Get("/config", handlers.IndexConfigHandler(cfg))
 
-	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", config.Port)
+	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", cfg.Port)
 
-	addr := fmt.Sprintf(":%d", config.Port)
+	addr := fmt.Sprintf(":%d", cfg.Port)
 
 	// Start an empty http server until we decide on handler strategy.
 	log.Fatal(http.ListenAndServe(addr, router))
