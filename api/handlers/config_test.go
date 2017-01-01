@@ -9,9 +9,9 @@ import (
 	"github.com/tmaesaka/cellar/config"
 )
 
-func TestConfigIndexHandler(t *testing.T) {
+func TestIndexConfigHandler(t *testing.T) {
 	cfg := config.NewApiConfig()
-	handler := ConfigIndexHandler(cfg)
+	handler := IndexConfigHandler(cfg)
 	req, _ := http.NewRequest("GET", "/config", nil)
 
 	recorder := httptest.NewRecorder()
