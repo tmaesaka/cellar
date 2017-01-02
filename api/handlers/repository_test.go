@@ -53,17 +53,23 @@ func TestCreateRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
 	router.Post("/repositories", CreateRepositoryHandler(cfg))
 
-	req, _ := http.NewRequest("POST", "/repositories", nil)
+	badReq, _ := http.NewRequest("POST", "/repositories", nil)
 
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	router.ServeHTTP(recorder, badReq)
 
-	if recorder.Code != http.StatusOK {
-		t.Errorf("Exepected status code 200; got %d", recorder.Code)
+	if recorder.Code != http.StatusBadRequest {
+		t.Errorf("Exepected status code 400; got %d", recorder.Code)
 	}
 
-	if recorder.Body.String() != "creating a repository" {
-		t.Error("Unexpected response body")
+	err := decodeError(recorder.Body.String())
+
+	if err.ErrorType != ErrorInvalidRequest {
+		t.Errorf("Expected invalid_request_error; got %s", err.ErrorType)
+	}
+
+	if err.Message != "name parameter required" {
+		t.Errorf("Unexpected response; got %s", err.Message)
 	}
 }
 

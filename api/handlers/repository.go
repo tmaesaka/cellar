@@ -21,7 +21,12 @@ func ShowRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 
 func CreateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("creating a repository"))
+		name := r.FormValue("name")
+
+		if len(name) == 0 {
+			renderError(w, ErrorInvalidRequest, "name parameter required")
+			return
+		}
 	}
 }
 
