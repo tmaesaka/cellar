@@ -34,6 +34,11 @@ func Run(cfg *config.ApiConfig) error {
 
 	router := vestigo.NewRouter()
 	router.Get("/config", handlers.IndexConfigHandler(cfg))
+	router.Get("/repositories", handlers.IndexRepositoryHandler(cfg))
+	router.Get("/repositories/:id", handlers.ShowRepositoryHandler(cfg))
+	router.Post("/repositories", handlers.CreateRepositoryHandler(cfg))
+	router.Put("/repositories/:id", handlers.UpdateRepositoryHandler(cfg))
+	router.Delete("/repositories/:id", handlers.DestroyRepositoryHandler(cfg))
 
 	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", cfg.Port)
 
