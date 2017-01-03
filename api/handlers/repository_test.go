@@ -1,8 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/husobee/vestigo"
@@ -10,8 +14,9 @@ import (
 )
 
 var (
-	cfg    = config.NewApiConfig()
-	repoId = "project_x"
+	cfg     = config.NewApiConfig()
+	repoId  = "project_x"
+	testDir = "/tmp/cellar_test"
 )
 
 func TestIndexRepositoryHandler(t *testing.T) {
@@ -50,20 +55,57 @@ func TestShowRepositoryHandler(t *testing.T) {
 }
 
 func TestCreateRepositoryHandler(t *testing.T) {
+	cfg.DataDir = testDir
 	router := vestigo.NewRouter()
 	router.Post("/repositories", CreateRepositoryHandler(cfg))
 
-	req, _ := http.NewRequest("POST", "/repositories", nil)
+	t.Run("missing name param", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/repositories", nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
 
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+		if recorder.Code != http.StatusBadRequest {
+			t.Errorf("Exepected status code 400; got %d", recorder.Code)
+		}
 
-	if recorder.Code != http.StatusOK {
-		t.Errorf("Exepected status code 200; got %d", recorder.Code)
-	}
+		err := decodeError(recorder.Body.String())
 
-	if recorder.Body.String() != "creating a repository" {
-		t.Error("Unexpected response body")
+		if err.ErrorType != ErrorInvalidRequest {
+			t.Errorf("Expected invalid_request_error; got %s", err.ErrorType)
+		}
+
+		if err.Message != "name parameter required" {
+			t.Errorf("Unexpected response; got %s", err.Message)
+		}
+	})
+
+	t.Run("name=<repoId>", func(t *testing.T) {
+		params := url.Values{}
+		params.Set("name", repoId)
+		encodedParams := strings.NewReader(params.Encode())
+
+		req, _ := http.NewRequest("POST", "/repositories", encodedParams)
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
+
+		if recorder.Code != http.StatusOK {
+			t.Errorf("Exepected status code 200; got %d", recorder.Code)
+		}
+
+		var resp Repository
+
+		if err := json.NewDecoder(recorder.Body).Decode(&resp); err != nil {
+			t.Error(err)
+		}
+
+		if resp.Name != repoId {
+			t.Errorf("Expected %s; got %s", repoId, resp.Name)
+		}
+	})
+
+	if err := os.RemoveAll(cfg.DataDir); err != nil {
+		t.Error(err)
 	}
 }
 
