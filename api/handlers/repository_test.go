@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -92,8 +93,14 @@ func TestCreateRepositoryHandler(t *testing.T) {
 			t.Errorf("Exepected status code 200; got %d", recorder.Code)
 		}
 
-		if recorder.Body.String() != "success" {
-			t.Errorf("Expected success; got %s", recorder.Body.String())
+		var resp Repository
+
+		if err := json.NewDecoder(recorder.Body).Decode(&resp); err != nil {
+			t.Error(err)
+		}
+
+		if resp.Name != repoId {
+			t.Errorf("Expected %s; got %s", repoId, resp.Name)
 		}
 	})
 

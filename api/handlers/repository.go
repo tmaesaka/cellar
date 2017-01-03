@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -8,6 +9,11 @@ import (
 	"github.com/libgit2/git2go"
 	"github.com/tmaesaka/cellar/config"
 )
+
+// Repository type holds information about a repository.
+type Repository struct {
+	Name string `json:"name"` // Unique name of the repository
+}
 
 func IndexRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +55,10 @@ func CreateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		w.Write([]byte("success"))
+		repo := Repository{Name: name}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(repo)
 	}
 }
 
