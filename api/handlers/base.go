@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"path"
 )
 
 const (
+	ErrorApi            = "api_error"
 	ErrorInvalidRequest = "invalid_request_error"
 )
 
@@ -32,4 +34,8 @@ func decodeError(message string) ErrorMessage {
 	errMsg := ErrorMessage{}
 	json.Unmarshal([]byte(message), &errMsg)
 	return errMsg
+}
+
+func repoPath(datadir, repoName string) string {
+	return path.Join(datadir, repoName)
 }
