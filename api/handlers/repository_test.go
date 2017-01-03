@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	cfg    = config.NewApiConfig()
-	repoId = "project_x"
+	cfg     = config.NewApiConfig()
+	repoId  = "project_x"
+	testDir = "/tmp/cellar_test"
 )
 
 func TestIndexRepositoryHandler(t *testing.T) {
@@ -50,27 +51,29 @@ func TestShowRepositoryHandler(t *testing.T) {
 }
 
 func TestCreateRepositoryHandler(t *testing.T) {
+	cfg.DataDir = testDir
 	router := vestigo.NewRouter()
 	router.Post("/repositories", CreateRepositoryHandler(cfg))
 
-	badReq, _ := http.NewRequest("POST", "/repositories", nil)
+	t.Run("missing name param", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/repositories", nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
 
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, badReq)
+		if recorder.Code != http.StatusBadRequest {
+			t.Errorf("Exepected status code 400; got %d", recorder.Code)
+		}
 
-	if recorder.Code != http.StatusBadRequest {
-		t.Errorf("Exepected status code 400; got %d", recorder.Code)
-	}
+		err := decodeError(recorder.Body.String())
 
-	err := decodeError(recorder.Body.String())
+		if err.ErrorType != ErrorInvalidRequest {
+			t.Errorf("Expected invalid_request_error; got %s", err.ErrorType)
+		}
 
-	if err.ErrorType != ErrorInvalidRequest {
-		t.Errorf("Expected invalid_request_error; got %s", err.ErrorType)
-	}
-
-	if err.Message != "name parameter required" {
-		t.Errorf("Unexpected response; got %s", err.Message)
-	}
+		if err.Message != "name parameter required" {
+			t.Errorf("Unexpected response; got %s", err.Message)
+		}
+	})
 }
 
 func TestUpdateRepositoryHandler(t *testing.T) {
