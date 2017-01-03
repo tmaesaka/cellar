@@ -3,6 +3,9 @@ package handlers
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/husobee/vestigo"
@@ -74,6 +77,29 @@ func TestCreateRepositoryHandler(t *testing.T) {
 			t.Errorf("Unexpected response; got %s", err.Message)
 		}
 	})
+
+	t.Run("name=<repoId>", func(t *testing.T) {
+		params := url.Values{}
+		params.Set("name", repoId)
+		encodedParams := strings.NewReader(params.Encode())
+
+		req, _ := http.NewRequest("POST", "/repositories", encodedParams)
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
+
+		if recorder.Code != http.StatusOK {
+			t.Errorf("Exepected status code 200; got %d", recorder.Code)
+		}
+
+		if recorder.Body.String() != "success" {
+			t.Errorf("Expected success; got %s", recorder.Body.String())
+		}
+	})
+
+	if err := os.RemoveAll(cfg.DataDir); err != nil {
+		t.Error(err)
+	}
 }
 
 func TestUpdateRepositoryHandler(t *testing.T) {
