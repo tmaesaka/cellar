@@ -37,5 +37,5 @@ func decodeError(message string) ErrorMessage {
 }
 
 func repoPath(datadir, repoName string) string {
-	return path.Join(datadir, repoName)
+	return path.Join(datadir, "repos/", repoName)
 }
