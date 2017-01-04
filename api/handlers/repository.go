@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/husobee/vestigo"
 	"github.com/libgit2/git2go"
@@ -68,8 +69,22 @@ func UpdateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	}
 }
 
+// DestroyRepositoryHandler destroys the specified repository.
 func DestroyRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("destroying " + vestigo.Param(r, "id")))
+		name := vestigo.Param(r, "id")
+		rpath := repoPath(cfg.DataDir, name)
+
+		if _, err := os.Stat(rpath); os.IsNotExist(err) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if err := os.RemoveAll(rpath); err != nil {
+			renderError(w, ErrorApi, "failed to destroy repository")
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 	}
 }

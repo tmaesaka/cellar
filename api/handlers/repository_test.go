@@ -10,13 +10,14 @@ import (
 	"testing"
 
 	"github.com/husobee/vestigo"
+	"github.com/libgit2/git2go"
 	"github.com/tmaesaka/cellar/config"
 )
 
 var (
 	cfg     = config.NewApiConfig()
 	repoId  = "project_x"
-	testDir = "/tmp/cellar_test"
+	testDir = "/tmp/_cellar_test"
 )
 
 func TestIndexRepositoryHandler(t *testing.T) {
@@ -104,9 +105,7 @@ func TestCreateRepositoryHandler(t *testing.T) {
 		}
 	})
 
-	if err := os.RemoveAll(cfg.DataDir); err != nil {
-		t.Error(err)
-	}
+	cleanup()
 }
 
 func TestUpdateRepositoryHandler(t *testing.T) {
@@ -129,20 +128,40 @@ func TestUpdateRepositoryHandler(t *testing.T) {
 }
 
 func TestDestroyRepositoryHandler(t *testing.T) {
+	cfg.DataDir = testDir
 	router := vestigo.NewRouter()
 	router.Delete("/repositories/:id", DestroyRepositoryHandler(cfg))
 
 	path := "/repositories/" + repoId
-	req, _ := http.NewRequest("DELETE", path, nil)
 
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	t.Run("deleting a non-existing repo", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", path, nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
 
-	if recorder.Code != http.StatusOK {
-		t.Errorf("Exepected status code 200; got %d", recorder.Code)
-	}
+		if recorder.Code != http.StatusNotFound {
+			t.Errorf("Exepected status code 404; got %d", recorder.Code)
+		}
+	})
 
-	if recorder.Body.String() != "destroying "+repoId {
-		t.Error("Unexpected response body")
+	t.Run("deleting an existing repo", func(t *testing.T) {
+		rpath := repoPath(cfg.DataDir, repoId)
+		git.InitRepository(rpath, true)
+
+		req, _ := http.NewRequest("DELETE", path, nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
+
+		if recorder.Code != http.StatusOK {
+			t.Errorf("Exepected status code 200; got %d", recorder.Code)
+		}
+	})
+
+	cleanup()
+}
+
+func cleanup() {
+	if err := os.RemoveAll(cfg.DataDir); err != nil {
+		panic("failed to cleanup")
 	}
 }
