@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
@@ -40,7 +41,7 @@ func TestShowRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
 	router.Get("/repos/:id", ShowRepositoryHandler(cfg))
 
-	path := "/repos/" + repoId
+	path := path.Join("/repos", repoId)
 	req, _ := http.NewRequest("GET", path, nil)
 
 	recorder := httptest.NewRecorder()
@@ -112,7 +113,7 @@ func TestUpdateRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
 	router.Put("/repos/:id", UpdateRepositoryHandler(cfg))
 
-	path := "/repos/" + repoId
+	path := path.Join("/repos", repoId)
 	req, _ := http.NewRequest("PUT", path, nil)
 
 	recorder := httptest.NewRecorder()
@@ -132,7 +133,7 @@ func TestDestroyRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
 	router.Delete("/repos/:id", DestroyRepositoryHandler(cfg))
 
-	path := "/repos/" + repoId
+	path := path.Join("/repos", repoId)
 
 	t.Run("deleting a non-existing repo", func(t *testing.T) {
 		req, _ := http.NewRequest("DELETE", path, nil)
