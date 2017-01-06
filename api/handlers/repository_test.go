@@ -38,22 +38,45 @@ func TestIndexRepositoryHandler(t *testing.T) {
 }
 
 func TestShowRepositoryHandler(t *testing.T) {
+	cfg.DataDir = testDir
 	router := vestigo.NewRouter()
 	router.Get("/repos/:id", ShowRepositoryHandler(cfg))
 
 	path := path.Join("/repos", repoId)
 	req, _ := http.NewRequest("GET", path, nil)
 
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	t.Run("non-existing repository", func(t *testing.T) {
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
 
-	if recorder.Code != http.StatusOK {
-		t.Errorf("Exepected status code 200; got %d", recorder.Code)
-	}
+		if recorder.Code != http.StatusNotFound {
+			t.Errorf("Exepected status code 404; got %d", recorder.Code)
+		}
+	})
 
-	if recorder.Body.String() != "showing "+repoId {
-		t.Error("Unexpected response body")
-	}
+	t.Run("existing repository", func(t *testing.T) {
+		rpath := repoPath(cfg.DataDir, repoId)
+		git.InitRepository(rpath, true)
+
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
+
+		if recorder.Code != http.StatusOK {
+			t.Errorf("Exepected status code 200; got %d", recorder.Code)
+		}
+
+		var resp Repository
+
+		if err := json.NewDecoder(recorder.Body).Decode(&resp); err != nil {
+			t.Error(err)
+		}
+
+		if resp.Name != repoId {
+			t.Errorf("Expected %s; got %s", repoId, resp.Name)
+		}
+	})
+
+	cleanup()
 }
 
 func TestCreateRepositoryHandler(t *testing.T) {
