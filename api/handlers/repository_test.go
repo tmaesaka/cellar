@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
@@ -22,7 +23,7 @@ var (
 
 func TestIndexRepositoryHandler(t *testing.T) {
 	handler := IndexRepositoryHandler(cfg)
-	req, _ := http.NewRequest("GET", "/repositories", nil)
+	req, _ := http.NewRequest("GET", "/repos", nil)
 
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, req)
@@ -38,9 +39,9 @@ func TestIndexRepositoryHandler(t *testing.T) {
 
 func TestShowRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
-	router.Get("/repositories/:id", ShowRepositoryHandler(cfg))
+	router.Get("/repos/:id", ShowRepositoryHandler(cfg))
 
-	path := "/repositories/" + repoId
+	path := path.Join("/repos", repoId)
 	req, _ := http.NewRequest("GET", path, nil)
 
 	recorder := httptest.NewRecorder()
@@ -58,10 +59,10 @@ func TestShowRepositoryHandler(t *testing.T) {
 func TestCreateRepositoryHandler(t *testing.T) {
 	cfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Post("/repositories", CreateRepositoryHandler(cfg))
+	router.Post("/repos", CreateRepositoryHandler(cfg))
 
 	t.Run("missing name param", func(t *testing.T) {
-		req, _ := http.NewRequest("POST", "/repositories", nil)
+		req, _ := http.NewRequest("POST", "/repos", nil)
 		recorder := httptest.NewRecorder()
 		router.ServeHTTP(recorder, req)
 
@@ -85,7 +86,7 @@ func TestCreateRepositoryHandler(t *testing.T) {
 		params.Set("name", repoId)
 		encodedParams := strings.NewReader(params.Encode())
 
-		req, _ := http.NewRequest("POST", "/repositories", encodedParams)
+		req, _ := http.NewRequest("POST", "/repos", encodedParams)
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		recorder := httptest.NewRecorder()
 		router.ServeHTTP(recorder, req)
@@ -110,9 +111,9 @@ func TestCreateRepositoryHandler(t *testing.T) {
 
 func TestUpdateRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
-	router.Put("/repositories/:id", UpdateRepositoryHandler(cfg))
+	router.Put("/repos/:id", UpdateRepositoryHandler(cfg))
 
-	path := "/repositories/" + repoId
+	path := path.Join("/repos", repoId)
 	req, _ := http.NewRequest("PUT", path, nil)
 
 	recorder := httptest.NewRecorder()
@@ -130,9 +131,9 @@ func TestUpdateRepositoryHandler(t *testing.T) {
 func TestDestroyRepositoryHandler(t *testing.T) {
 	cfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Delete("/repositories/:id", DestroyRepositoryHandler(cfg))
+	router.Delete("/repos/:id", DestroyRepositoryHandler(cfg))
 
-	path := "/repositories/" + repoId
+	path := path.Join("/repos", repoId)
 
 	t.Run("deleting a non-existing repo", func(t *testing.T) {
 		req, _ := http.NewRequest("DELETE", path, nil)

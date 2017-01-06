@@ -21,6 +21,19 @@ func ensureDataDirPresence(datadir string) error {
 	return nil
 }
 
+func buildRouter(cfg *config.ApiConfig) *vestigo.Router {
+	router := vestigo.NewRouter()
+
+	router.Get("/config", handlers.IndexConfigHandler(cfg))
+	router.Get("/repos", handlers.IndexRepositoryHandler(cfg))
+	router.Get("/repos/:id", handlers.ShowRepositoryHandler(cfg))
+	router.Post("/repos", handlers.CreateRepositoryHandler(cfg))
+	router.Put("/repos/:id", handlers.UpdateRepositoryHandler(cfg))
+	router.Delete("/repos/:id", handlers.DestroyRepositoryHandler(cfg))
+
+	return router
+}
+
 // Run checks if the provided configuration is sufficient to run the
 // Cellar daemon. If successful, a Web API server will be started.
 func Run(cfg *config.ApiConfig) error {
@@ -32,20 +45,12 @@ func Run(cfg *config.ApiConfig) error {
 		log.Fatalf("Invalid datadir: %v", err)
 	}
 
-	router := vestigo.NewRouter()
-	router.Get("/config", handlers.IndexConfigHandler(cfg))
-	router.Get("/repositories", handlers.IndexRepositoryHandler(cfg))
-	router.Get("/repositories/:id", handlers.ShowRepositoryHandler(cfg))
-	router.Post("/repositories", handlers.CreateRepositoryHandler(cfg))
-	router.Put("/repositories/:id", handlers.UpdateRepositoryHandler(cfg))
-	router.Delete("/repositories/:id", handlers.DestroyRepositoryHandler(cfg))
-
 	fmt.Fprintf(os.Stderr, "Starting cellard... listening on port %d\n", cfg.Port)
 
 	addr := fmt.Sprintf(":%d", cfg.Port)
 
 	// Start an empty http server until we decide on handler strategy.
-	log.Fatal(http.ListenAndServe(addr, router))
+	log.Fatal(http.ListenAndServe(addr, buildRouter(cfg)))
 
 	return nil
 }
