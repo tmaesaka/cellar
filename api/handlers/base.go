@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	ErrorApi            = "api_error"
-	ErrorInvalidRequest = "invalid_request_error"
+	ApiError            = "api_error"
+	InvalidRequestError = "invalid_request_error"
 )
 
 // ErrorMessage type holds API error related information.

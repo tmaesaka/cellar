@@ -99,7 +99,7 @@ func TestCreateRepositoryHandler(t *testing.T) {
 
 		err := decodeError(recorder.Body.String())
 
-		if err.ErrorType != ErrorInvalidRequest {
+		if err.ErrorType != InvalidRequestError {
 			t.Errorf("Expected invalid_request_error; got %s", err.ErrorType)
 		}
 
