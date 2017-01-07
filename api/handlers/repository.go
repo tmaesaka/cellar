@@ -30,7 +30,7 @@ func ShowRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		_, err := git.OpenRepository(rpath)
 
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
+			NotFound(w)
 			return
 		}
 
@@ -89,7 +89,7 @@ func DestroyRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		rpath := repoPath(cfg.DataDir, name)
 
 		if _, err := os.Stat(rpath); os.IsNotExist(err) {
-			w.WriteHeader(http.StatusNotFound)
+			NotFound(w)
 			return
 		}
 
