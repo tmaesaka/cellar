@@ -22,9 +22,22 @@ func IndexRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	}
 }
 
+// ShowRepositoryHandler looks up the requested git repository.
 func ShowRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("showing " + vestigo.Param(r, "id")))
+		name := vestigo.Param(r, "id")
+		rpath := repoPath(cfg.DataDir, name)
+		_, err := git.OpenRepository(rpath)
+
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		repo := Repository{Name: name}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(repo)
 	}
 }
 
