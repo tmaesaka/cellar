@@ -30,7 +30,7 @@ func ShowRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		_, err := git.OpenRepository(rpath)
 
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
+			NotFound(w)
 			return
 		}
 
@@ -48,7 +48,7 @@ func CreateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		name := r.FormValue("name")
 
 		if len(name) == 0 {
-			renderError(w, ErrorInvalidRequest, "name parameter required")
+			BadRequest(w, InvalidRequestError, "name parameter required")
 			return
 		}
 
@@ -57,7 +57,7 @@ func CreateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 
 		if gitRepo != nil {
 			errStr := fmt.Sprintf("respoitory %s already exists", name)
-			renderError(w, ErrorApi, errStr)
+			BadRequest(w, ApiError, errStr)
 			return
 		}
 
@@ -65,7 +65,7 @@ func CreateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		_, err := git.InitRepository(rpath, bareRepo)
 
 		if err != nil {
-			renderError(w, ErrorApi, "failed to init repository")
+			BadRequest(w, ApiError, "failed to init repository")
 			return
 		}
 
@@ -89,12 +89,12 @@ func DestroyRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		rpath := repoPath(cfg.DataDir, name)
 
 		if _, err := os.Stat(rpath); os.IsNotExist(err) {
-			w.WriteHeader(http.StatusNotFound)
+			NotFound(w)
 			return
 		}
 
 		if err := os.RemoveAll(rpath); err != nil {
-			renderError(w, ErrorApi, "failed to destroy repository")
+			BadRequest(w, ApiError, "failed to destroy repository")
 			return
 		}
 

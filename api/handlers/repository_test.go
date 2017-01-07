@@ -52,6 +52,10 @@ func TestShowRepositoryHandler(t *testing.T) {
 		if recorder.Code != http.StatusNotFound {
 			t.Errorf("Exepected status code 404; got %d", recorder.Code)
 		}
+
+		if len(recorder.Body.String()) != 0 {
+			t.Errorf("Exepected an empty body")
+		}
 	})
 
 	t.Run("existing repository", func(t *testing.T) {
@@ -95,7 +99,7 @@ func TestCreateRepositoryHandler(t *testing.T) {
 
 		err := decodeError(recorder.Body.String())
 
-		if err.ErrorType != ErrorInvalidRequest {
+		if err.ErrorType != InvalidRequestError {
 			t.Errorf("Expected invalid_request_error; got %s", err.ErrorType)
 		}
 
@@ -165,6 +169,10 @@ func TestDestroyRepositoryHandler(t *testing.T) {
 
 		if recorder.Code != http.StatusNotFound {
 			t.Errorf("Exepected status code 404; got %d", recorder.Code)
+		}
+
+		if len(recorder.Body.String()) != 0 {
+			t.Errorf("Exepected an empty body")
 		}
 	})
 

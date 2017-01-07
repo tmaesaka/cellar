@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	ErrorApi            = "api_error"
-	ErrorInvalidRequest = "invalid_request_error"
+	ApiError            = "api_error"
+	InvalidRequestError = "invalid_request_error"
 )
 
 // ErrorMessage type holds API error related information.
@@ -19,14 +19,26 @@ type ErrorMessage struct {
 	Message   string `json:"message"` // Summary of the error
 }
 
-func renderError(w http.ResponseWriter, errorType, message string) {
-	w.WriteHeader(http.StatusBadRequest)
-	w.Header().Set("Content-Type", "application/json")
-
+// BadRequest renders a 400 bad request response.
+func BadRequest(w http.ResponseWriter, errorType, message string) {
 	errMsg := ErrorMessage{ErrorType: errorType, Message: message}
+	renderError(w, http.StatusBadRequest, &errMsg)
+}
 
-	if err := json.NewEncoder(w).Encode(errMsg); err != nil {
-		log.Print(err)
+// NotFound renders a 404 not found response.
+func NotFound(w http.ResponseWriter) {
+	renderError(w, http.StatusNotFound, nil)
+}
+
+func renderError(w http.ResponseWriter, status int, errMsg *ErrorMessage) {
+	w.WriteHeader(status)
+
+	if errMsg != nil {
+		w.Header().Set("Content-Type", "application/json")
+
+		if err := json.NewEncoder(w).Encode(errMsg); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
