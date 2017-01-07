@@ -19,14 +19,20 @@ type ErrorMessage struct {
 	Message   string `json:"message"` // Summary of the error
 }
 
-func renderError(w http.ResponseWriter, errorType, message string) {
-	w.WriteHeader(http.StatusBadRequest)
-	w.Header().Set("Content-Type", "application/json")
-
+func BadRequest(w http.ResponseWriter, errorType, message string) {
 	errMsg := ErrorMessage{ErrorType: errorType, Message: message}
+	renderError(w, http.StatusBadRequest, &errMsg)
+}
 
-	if err := json.NewEncoder(w).Encode(errMsg); err != nil {
-		log.Print(err)
+func renderError(w http.ResponseWriter, status int, errMsg *ErrorMessage) {
+	w.WriteHeader(status)
+
+	if errMsg != nil {
+		w.Header().Set("Content-Type", "application/json")
+
+		if err := json.NewEncoder(w).Encode(errMsg); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
