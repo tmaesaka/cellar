@@ -22,19 +22,59 @@ var (
 )
 
 func TestIndexRepositoryHandler(t *testing.T) {
+	cfg.DataDir = testDir
 	handler := IndexRepositoryHandler(cfg)
 	req, _ := http.NewRequest("GET", "/repos", nil)
 
-	recorder := httptest.NewRecorder()
-	handler.ServeHTTP(recorder, req)
+	t.Run("without repositories", func(t *testing.T) {
+		// FIXME(toru): This is a dirty hack around cleanup()
+		if err := os.MkdirAll(cfg.DataDir+"/repos", 0755); err != nil {
+			t.Error(err.Error())
+		}
 
-	if recorder.Code != http.StatusOK {
-		t.Errorf("Exepected status code 200; got %d", recorder.Code)
-	}
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, req)
 
-	if recorder.Body.String() != "all repositories" {
-		t.Error("Unexpected response body")
-	}
+		if recorder.Code != http.StatusOK {
+			t.Errorf("Expected status code 200; got %d", recorder.Code)
+		}
+
+		if recorder.Body.String() != "[]\n" {
+			t.Errorf("Expected []; got %s", recorder.Body.String())
+		}
+	})
+
+	t.Run("with repositories", func(t *testing.T) {
+		repoNames := []string{"repo1", "repo2"}
+
+		for _, name := range repoNames {
+			git.InitRepository(repoPath(cfg.DataDir, name), true)
+		}
+
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, req)
+
+		if recorder.Code != http.StatusOK {
+			t.Errorf("Exepected status code 200; got %d", recorder.Code)
+		}
+
+		var repos []Repository
+		if err := json.NewDecoder(recorder.Body).Decode(&repos); err != nil {
+			t.Error(err)
+		}
+
+		if len(repos) != 2 {
+			t.Error("Expected 2 repositories; got %d", len(repos))
+		}
+
+		for idx, repo := range repos {
+			if repo.Name != repoNames[idx] {
+				t.Error("Expected %s; got %s", repo.Name, repoNames[idx])
+			}
+		}
+	})
+
+	cleanup()
 }
 
 func TestShowRepositoryHandler(t *testing.T) {

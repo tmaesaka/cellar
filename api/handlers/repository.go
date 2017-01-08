@@ -3,8 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/husobee/vestigo"
 	"github.com/libgit2/git2go"
@@ -16,9 +19,34 @@ type Repository struct {
 	Name string `json:"name"` // Unique name of the repository
 }
 
+// IndexRepositoryHandler generates a list of existing repositories.
 func IndexRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("all repositories"))
+		repos := make([]Repository, 0)
+
+		files, err := ioutil.ReadDir(path.Join(cfg.DataDir, "repos"))
+
+		if err != nil {
+			BadRequest(w, ApiError, err.Error())
+			return
+		}
+
+		for _, f := range files {
+			repoPath := repoPath(cfg.DataDir, f.Name())
+			_, err := git.OpenRepositoryExtended(repoPath, git.RepositoryOpenNoSearch, "")
+
+			if err != nil {
+				if cfg.Verbose {
+					log.Printf("%s is not a git repository", repoPath)
+				}
+				continue
+			}
+
+			repos = append(repos, Repository{Name: f.Name()})
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(repos)
 	}
 }
 
