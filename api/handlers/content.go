@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	"github.com/husobee/vestigo"
@@ -19,6 +20,19 @@ import (
 func CreateContentHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := vestigo.Param(r, "_name")
+		content := r.FormValue("content")
+
+		if len(content) == 0 {
+			BadRequest(w, InvalidRequestError, "content parameter required")
+			return
+		}
+
+		_, err := base64.StdEncoding.DecodeString(content)
+
+		if err != nil {
+			BadRequest(w, InvalidRequestError, "content must be base64 encoded")
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(path))
