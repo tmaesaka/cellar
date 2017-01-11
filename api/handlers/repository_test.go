@@ -16,19 +16,19 @@ import (
 )
 
 var (
-	cfg     = config.NewApiConfig()
-	repoId  = "project_x"
-	testDir = "/tmp/_cellar_test"
+	testCfg      = config.NewApiConfig()
+	testRepoName = "project_x"
+	testDir      = "/tmp/_cellar_test"
 )
 
 func TestIndexRepositoryHandler(t *testing.T) {
-	cfg.DataDir = testDir
-	handler := IndexRepositoryHandler(cfg)
+	testCfg.DataDir = testDir
+	handler := IndexRepositoryHandler(testCfg)
 	req, _ := http.NewRequest("GET", "/repos", nil)
 
 	t.Run("without repositories", func(t *testing.T) {
 		// FIXME(toru): This is a dirty hack around cleanup()
-		if err := os.MkdirAll(cfg.DataDir+"/repos", 0755); err != nil {
+		if err := os.MkdirAll(testCfg.DataDir+"/repos", 0755); err != nil {
 			t.Error(err.Error())
 		}
 
@@ -48,7 +48,7 @@ func TestIndexRepositoryHandler(t *testing.T) {
 		repoNames := []string{"repo1", "repo2"}
 
 		for _, name := range repoNames {
-			git.InitRepository(repoPath(cfg.DataDir, name), true)
+			git.InitRepository(repoPath(testCfg.DataDir, name), true)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -78,11 +78,11 @@ func TestIndexRepositoryHandler(t *testing.T) {
 }
 
 func TestShowRepositoryHandler(t *testing.T) {
-	cfg.DataDir = testDir
+	testCfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Get("/repos/:id", ShowRepositoryHandler(cfg))
+	router.Get("/repos/:id", ShowRepositoryHandler(testCfg))
 
-	path := path.Join("/repos", repoId)
+	path := path.Join("/repos", testRepoName)
 	req, _ := http.NewRequest("GET", path, nil)
 
 	t.Run("non-existing repository", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestShowRepositoryHandler(t *testing.T) {
 	})
 
 	t.Run("existing repository", func(t *testing.T) {
-		rpath := repoPath(cfg.DataDir, repoId)
+		rpath := repoPath(testCfg.DataDir, testRepoName)
 		git.InitRepository(rpath, true)
 
 		recorder := httptest.NewRecorder()
@@ -115,8 +115,8 @@ func TestShowRepositoryHandler(t *testing.T) {
 			t.Error(err)
 		}
 
-		if resp.Name != repoId {
-			t.Errorf("Expected %s; got %s", repoId, resp.Name)
+		if resp.Name != testRepoName {
+			t.Errorf("Expected %s; got %s", testRepoName, resp.Name)
 		}
 	})
 
@@ -124,9 +124,9 @@ func TestShowRepositoryHandler(t *testing.T) {
 }
 
 func TestCreateRepositoryHandler(t *testing.T) {
-	cfg.DataDir = testDir
+	testCfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Post("/repos", CreateRepositoryHandler(cfg))
+	router.Post("/repos", CreateRepositoryHandler(testCfg))
 
 	t.Run("missing name param", func(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/repos", nil)
@@ -148,9 +148,9 @@ func TestCreateRepositoryHandler(t *testing.T) {
 		}
 	})
 
-	t.Run("name=<repoId>", func(t *testing.T) {
+	t.Run("name=<repoName>", func(t *testing.T) {
 		params := url.Values{}
-		params.Set("name", repoId)
+		params.Set("name", testRepoName)
 		encodedParams := strings.NewReader(params.Encode())
 
 		req, _ := http.NewRequest("POST", "/repos", encodedParams)
@@ -168,8 +168,8 @@ func TestCreateRepositoryHandler(t *testing.T) {
 			t.Error(err)
 		}
 
-		if resp.Name != repoId {
-			t.Errorf("Expected %s; got %s", repoId, resp.Name)
+		if resp.Name != testRepoName {
+			t.Errorf("Expected %s; got %s", testRepoName, resp.Name)
 		}
 	})
 
@@ -178,9 +178,9 @@ func TestCreateRepositoryHandler(t *testing.T) {
 
 func TestUpdateRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
-	router.Put("/repos/:id", UpdateRepositoryHandler(cfg))
+	router.Put("/repos/:id", UpdateRepositoryHandler(testCfg))
 
-	path := path.Join("/repos", repoId)
+	path := path.Join("/repos", testRepoName)
 	req, _ := http.NewRequest("PUT", path, nil)
 
 	recorder := httptest.NewRecorder()
@@ -190,17 +190,17 @@ func TestUpdateRepositoryHandler(t *testing.T) {
 		t.Errorf("Exepected status code 200; got %d", recorder.Code)
 	}
 
-	if recorder.Body.String() != "updating "+repoId {
+	if recorder.Body.String() != "updating "+testRepoName {
 		t.Error("Unexpected response body")
 	}
 }
 
 func TestDestroyRepositoryHandler(t *testing.T) {
-	cfg.DataDir = testDir
+	testCfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Delete("/repos/:id", DestroyRepositoryHandler(cfg))
+	router.Delete("/repos/:id", DestroyRepositoryHandler(testCfg))
 
-	path := path.Join("/repos", repoId)
+	path := path.Join("/repos", testRepoName)
 
 	t.Run("deleting a non-existing repo", func(t *testing.T) {
 		req, _ := http.NewRequest("DELETE", path, nil)
@@ -217,7 +217,7 @@ func TestDestroyRepositoryHandler(t *testing.T) {
 	})
 
 	t.Run("deleting an existing repo", func(t *testing.T) {
-		rpath := repoPath(cfg.DataDir, repoId)
+		rpath := repoPath(testCfg.DataDir, testRepoName)
 		git.InitRepository(rpath, true)
 
 		req, _ := http.NewRequest("DELETE", path, nil)
@@ -233,7 +233,7 @@ func TestDestroyRepositoryHandler(t *testing.T) {
 }
 
 func cleanup() {
-	if err := os.RemoveAll(cfg.DataDir); err != nil {
+	if err := os.RemoveAll(testCfg.DataDir); err != nil {
 		panic("failed to cleanup")
 	}
 }
