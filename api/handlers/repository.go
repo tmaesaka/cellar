@@ -53,7 +53,7 @@ func IndexRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 // ShowRepositoryHandler looks up the requested git repository.
 func ShowRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		name := vestigo.Param(r, "id")
+		name := vestigo.Param(r, "name")
 		rpath := repoPath(cfg.DataDir, name)
 		_, err := git.OpenRepository(rpath)
 
@@ -106,14 +106,14 @@ func CreateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 
 func UpdateRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("updating " + vestigo.Param(r, "id")))
+		w.Write([]byte("unimplemented"))
 	}
 }
 
 // DestroyRepositoryHandler destroys the specified repository.
 func DestroyRepositoryHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		name := vestigo.Param(r, "id")
+		name := vestigo.Param(r, "name")
 		rpath := repoPath(cfg.DataDir, name)
 
 		if _, err := os.Stat(rpath); os.IsNotExist(err) {

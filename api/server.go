@@ -26,11 +26,11 @@ func buildRouter(cfg *config.ApiConfig) *vestigo.Router {
 
 	router.Get("/config", handlers.IndexConfigHandler(cfg))
 	router.Get("/repos", handlers.IndexRepositoryHandler(cfg))
-	router.Get("/repos/:id", handlers.ShowRepositoryHandler(cfg))
+	router.Get("/repos/:name", handlers.ShowRepositoryHandler(cfg))
 	router.Post("/repos", handlers.CreateRepositoryHandler(cfg))
-	router.Put("/repos/:id", handlers.UpdateRepositoryHandler(cfg))
-	router.Delete("/repos/:id", handlers.DestroyRepositoryHandler(cfg))
-	router.Post("/repos/:id/contents/*", handlers.CreateContentHandler(cfg))
+	router.Put("/repos/:name", handlers.UpdateRepositoryHandler(cfg))
+	router.Delete("/repos/:name", handlers.DestroyRepositoryHandler(cfg))
+	router.Post("/repos/:name/contents/*", handlers.CreateContentHandler(cfg))
 
 	return router
 }

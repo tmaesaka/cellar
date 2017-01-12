@@ -14,7 +14,7 @@ import (
 func TestCreateContentHandler(t *testing.T) {
 	testCfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Post("/repos/:id/contents/*", CreateContentHandler(testCfg))
+	router.Post("/repos/:name/contents/*", CreateContentHandler(testCfg))
 
 	testFile := "test.txt"
 	reqPath := path.Join("/repos", testRepoName, "contents", testFile)

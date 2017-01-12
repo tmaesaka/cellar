@@ -80,7 +80,7 @@ func TestIndexRepositoryHandler(t *testing.T) {
 func TestShowRepositoryHandler(t *testing.T) {
 	testCfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Get("/repos/:id", ShowRepositoryHandler(testCfg))
+	router.Get("/repos/:name", ShowRepositoryHandler(testCfg))
 
 	path := path.Join("/repos", testRepoName)
 	req, _ := http.NewRequest("GET", path, nil)
@@ -178,7 +178,7 @@ func TestCreateRepositoryHandler(t *testing.T) {
 
 func TestUpdateRepositoryHandler(t *testing.T) {
 	router := vestigo.NewRouter()
-	router.Put("/repos/:id", UpdateRepositoryHandler(testCfg))
+	router.Put("/repos/:name", UpdateRepositoryHandler(testCfg))
 
 	path := path.Join("/repos", testRepoName)
 	req, _ := http.NewRequest("PUT", path, nil)
@@ -190,7 +190,7 @@ func TestUpdateRepositoryHandler(t *testing.T) {
 		t.Errorf("Exepected status code 200; got %d", recorder.Code)
 	}
 
-	if recorder.Body.String() != "updating "+testRepoName {
+	if recorder.Body.String() != "unimplemented" {
 		t.Error("Unexpected response body")
 	}
 }
@@ -198,7 +198,7 @@ func TestUpdateRepositoryHandler(t *testing.T) {
 func TestDestroyRepositoryHandler(t *testing.T) {
 	testCfg.DataDir = testDir
 	router := vestigo.NewRouter()
-	router.Delete("/repos/:id", DestroyRepositoryHandler(testCfg))
+	router.Delete("/repos/:name", DestroyRepositoryHandler(testCfg))
 
 	path := path.Join("/repos", testRepoName)
 
