@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/husobee/vestigo"
+	"github.com/libgit2/git2go"
 	"github.com/tmaesaka/cellar/config"
 )
 
@@ -19,22 +20,30 @@ import (
 // 5) Update the ref to point at the latest commit (git update-ref)
 func CreateContentHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		path := vestigo.Param(r, "_name")
+		repoName := vestigo.Param(r, "name")
+		repoPath := repoPath(cfg.DataDir, repoName)
+
 		content := r.FormValue("content")
+		contentPath := vestigo.Param(r, "_name")
+
+		_, err := git.OpenRepository(repoPath)
+		if err != nil {
+			NotFound(w)
+			return
+		}
 
 		if len(content) == 0 {
 			BadRequest(w, InvalidRequestError, "content parameter required")
 			return
 		}
 
-		_, err := base64.StdEncoding.DecodeString(content)
-
+		_, err = base64.StdEncoding.DecodeString(content)
 		if err != nil {
 			BadRequest(w, InvalidRequestError, "content must be base64 encoded")
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(path))
+		w.Write([]byte(contentPath))
 	}
 }

@@ -60,22 +60,34 @@ func TestCreateContentHandler(t *testing.T) {
 			}
 		})
 
+		t.Run("without content param", func(t *testing.T) {
+			req, _ := http.NewRequest("POST", reqPath, nil)
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, req)
+
+			if recorder.Code != http.StatusBadRequest {
+				t.Errorf("Exepected status code 400; got %d", recorder.Code)
+			}
+
+			errResp := decodeError(recorder.Body.String())
+
+			if errResp.Message != "content parameter required" {
+				t.Errorf("Mismatched error message: %s", recorder.Body.String())
+			}
+		})
+
 		cleanup()
 	})
 
-	t.Run("without content param", func(t *testing.T) {
-		req, _ := http.NewRequest("POST", reqPath, nil)
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, req)
+	t.Run("with non-existing repository", func(t *testing.T) {
+		t.Run("without content param", func(t *testing.T) {
+			req, _ := http.NewRequest("POST", reqPath, nil)
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, req)
 
-		if recorder.Code != http.StatusBadRequest {
-			t.Errorf("Exepected status code 400; got %d", recorder.Code)
-		}
-
-		errResp := decodeError(recorder.Body.String())
-
-		if errResp.Message != "content parameter required" {
-			t.Errorf("Mismatched error message: %s", recorder.Body.String())
-		}
+			if recorder.Code != http.StatusNotFound {
+				t.Errorf("Exepected status code 404; got %d", recorder.Code)
+			}
+		})
 	})
 }
